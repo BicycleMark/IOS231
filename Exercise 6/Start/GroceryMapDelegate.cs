@@ -2,6 +2,8 @@
 using MapKit;
 using UIKit;
 using System.Diagnostics;
+using CoreLocation;
+using Foundation;
 
 namespace BananaFinder
 {
@@ -11,7 +13,6 @@ namespace BananaFinder
 
 		public GroceryMapDelegate ()
 		{
-
 		}
 
 		public override MKAnnotationView GetViewForAnnotation (MKMapView mapView, IMKAnnotation annotation)
@@ -61,7 +62,30 @@ namespace BananaFinder
 			Debug.WriteLine ("RegionChanged");
 
 			if (MapViewChanged != null)
-				MapViewChanged (); //invoke the action
+				MapViewChanged ();
+		}
+
+		void ShowDirections (MKMapItem destination, MKMapView mapView)
+		{
+			var source = new MKMapItem (new MKPlacemark (ViewController.currentLocation, (MKPlacemarkAddress)null));
+
+			var request = new MKDirectionsRequest () {
+				Destination = destination,
+				Source = source,
+				RequestsAlternateRoutes = false,
+			};
+
+			var directions = new MKDirections (request);
+
+			directions.CalculateDirections ((MKDirectionsResponse response, NSError e) => {
+			
+				if(response == null || response.Routes.Length == 0)
+					return;
+
+				//TODO - remove old route
+
+				//TODO - save the polyline and add it to the map view
+			});
 		}
 	}
 }

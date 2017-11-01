@@ -8,10 +8,11 @@ namespace BananaFinder
 	{
 		GroceryStore store;
 
-		public string Address { get {return store.Address; } }
+		public double TimeOpen {get { return store.TimeOpen; } }
+		public double TimeClosed {get { return store.TimeClosed; } }
 
 		public override string Title { get { return store.Name; } }
-		public override string Subtitle { get { return store.PhoneNumber; } }
+		public override string Subtitle { get { return store.Description; } }
 		public override CLLocationCoordinate2D Coordinate 
 		{
 			get {return new CLLocationCoordinate2D(store.Latitude, store.Longitude); }

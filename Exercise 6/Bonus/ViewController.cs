@@ -5,6 +5,9 @@ using MapKit;
 using CoreLocation;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Foundation;
+using System.Diagnostics;
+using System.Linq;
 
 namespace BananaFinder
 {
@@ -20,12 +23,44 @@ namespace BananaFinder
 		{
 			base.ViewDidLoad ();
 
+			var mapDelegate = new GroceryMapDelegate ();
+			mapDelegate.MapViewChanged += () => SearchAsync ();
+
 			map.Camera.CenterCoordinate = currentLocation;
 			map.Camera.Altitude = 10000;
-
-			var mapDelegate = new GroceryMapDelegate ();
-
 			map.Delegate = mapDelegate;
+
+			//add a pin for our location
+			map.AddAnnotation(new MKPointAnnotation() {Title = "My Location", Coordinate = currentLocation });
+
+			//add an overlay showing walkable distance
+			var circle = MKCircle.Circle(currentLocation, 1600); //1600m ~ 1 mile
+			map.AddOverlay (circle);
+		}
+
+		public async Task SearchAsync ()
+		{
+			var request = new MKLocalSearchRequest ();
+			request.NaturalLanguageQuery = "Grocery stores";
+			request.Region = map.Region;//we'll search on the current screen
+
+			var local = new MKLocalSearch(request);
+
+			var response = await local.StartAsync ();
+
+			if (response != null && response.MapItems.Length > 0) 
+			{
+				var stores = new List<GroceryStore> ();
+
+				foreach (var item in response.MapItems) {
+					stores.Add(new GroceryStore()
+						{
+							Name = item.Name, PhoneNumber = item.PhoneNumber, Address = item.Placemark.Title,
+							Longitude = item.Placemark.Location.Coordinate.Longitude, Latitude = item.Placemark.Location.Coordinate.Latitude
+						});
+				}
+				AddStoreAnnotations(stores);
+			}
 		}
 
         void AddStoreAnnotations(List<GroceryStore> stores)
@@ -51,6 +86,7 @@ namespace BananaFinder
                     map.AddAnnotation(storeAnnotation);
             }
         }
+
 	}
 }
 

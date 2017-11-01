@@ -19,25 +19,37 @@ namespace BananaFinder
 
 		public override MKAnnotationView GetViewForAnnotation (MKMapView mapView, IMKAnnotation annotation)
 		{
-			if (annotation.GetType () == typeof(MKPointAnnotation)) {
+            NSObject annotationType = ObjCRuntime.Runtime.GetNSObject(annotation.Handle);
+            if (annotationType.GetType() == typeof(MKPointAnnotation)) {
 				return new MKAnnotationView (annotation, "me") { Image = UIImage.FromBundle ("monkey.png") };
 			}
 
-			MKAnnotationView view = mapView.DequeueReusableAnnotation ("pin");
+            string resuseId = annotation is StoreAnnotation ? "pin" : "cluster";
+            var pinView = mapView.DequeueReusableAnnotation(resuseId);
 
-			if (view == null) {
-				view = new MKAnnotationView (annotation, "pin");
-				view.Image = UIImage.FromBundle ("banana_pin.png");
-				view.CenterOffset = new CoreGraphics.CGPoint (0, -20);
+            if (pinView == null)
+            {
+                if (annotation is StoreAnnotation)
+                {
+                    pinView = new MKAnnotationView(annotation, "pin");
+                    pinView.Image = UIImage.FromBundle("banana_pin.png");
+                    pinView.CenterOffset = new CoreGraphics.CGPoint(0, -20);
 
-				view.CanShowCallout = true;
-				view.LeftCalloutAccessoryView = new UIImageView (UIImage.FromBundle ("banana.png"));
-				view.RightCalloutAccessoryView = UIButton.FromType (UIButtonType.DetailDisclosure);
-			} else {
-				view.Annotation = annotation;
-			}
-
-			return view;
+                    pinView.CanShowCallout = true;
+                    pinView.LeftCalloutAccessoryView = new UIImageView(UIImage.FromBundle("banana.png"));
+                    pinView.RightCalloutAccessoryView = UIButton.FromType(UIButtonType.DetailDisclosure);
+                }
+                else
+                {
+                    pinView = new MKMarkerAnnotationView(annotation, "cluster");
+                }
+            }
+            else
+            {
+                pinView.Annotation = annotation;
+            }
+            pinView.ClusteringIdentifier = "banana";
+            return pinView;
 		}
 
 		public override void CalloutAccessoryControlTapped (MKMapView mapView, MKAnnotationView view, UIControl control)
@@ -79,17 +91,14 @@ namespace BananaFinder
 
 		public override void DidSelectAnnotationView (MKMapView mapView, MKAnnotationView view)
 		{
-			if (view.Annotation is StoreAnnotation == false)
-				return;
+            StoreAnnotation storeAnnotation = view.Annotation as StoreAnnotation;
+            if (storeAnnotation != null)
+            {
+                var coord = storeAnnotation.Coordinate;
 
-			CLLocationCoordinate2D coord;
-
-			coord = view.Annotation.Coordinate;
-
-		    coord = ((StoreAnnotation)view.Annotation).Coordinate;
-
-			var destination = new MKMapItem (new MKPlacemark (coord, (MKPlacemarkAddress)null));
-			ShowDirections (destination, mapView);
+                var destination = new MKMapItem(new MKPlacemark(coord, (MKPlacemarkAddress)null));
+                ShowDirections(destination, mapView);
+            }
 		}
 
 		void ShowDirections (MKMapItem destination, MKMapView mapView)

@@ -29,23 +29,10 @@ namespace BananaFinder
 			map.Camera.CenterCoordinate = currentLocation;
 			map.Camera.Altitude = 10000;
 			map.Delegate = mapDelegate;
-
-			//add a pin for our location
-			map.AddAnnotation(new MKPointAnnotation() {Title = "My Location", Coordinate = currentLocation });
-
-			//add an overlay showing walkable distance
-			var circle = MKCircle.Circle(currentLocation, 1600); //1600m ~ 1 mile
-			map.AddOverlay (circle);
 		}
 
 		public async Task SearchAsync ()
 		{
-			var oldPins = from a in map.Annotations
-						  where a.GetType() == typeof(StoreAnnotation)
-				          select a;
-
-			map.RemoveAnnotations (oldPins.ToArray());//clear any existing results
-
 			var request = new MKLocalSearchRequest ();
 			request.NaturalLanguageQuery = "Grocery stores";
 			request.Region = map.Region;//we'll search on the current screen
@@ -69,13 +56,29 @@ namespace BananaFinder
 			}
 		}
 
-		void AddStoreAnnotations (List<GroceryStore> stores)
-		{
-			foreach (var store in stores) {
-				var annotation = new StoreAnnotation (store);
-				map.AddAnnotation (annotation);
-			}
-		}
+        void AddStoreAnnotations(List<GroceryStore> stores)
+        {
+            foreach (var store in stores)
+            {
+                var storeAnnotation = new StoreAnnotation(store);
+                //make sure we dont already have the annotation
+                bool alreadyContainsAnnotation = false;
+                foreach (var annotation in map.Annotations)
+                {
+                    StoreAnnotation mapAnnotationAsStore = annotation as StoreAnnotation;
+                    if (mapAnnotationAsStore != null)
+                    {
+                        if (mapAnnotationAsStore.Address == store.Address)
+                        {
+                            alreadyContainsAnnotation = true;
+                            break;
+                        }
+                    }
+                }
+                if (!alreadyContainsAnnotation)
+                    map.AddAnnotation(storeAnnotation);
+            }
+        }
 	}
 }
 

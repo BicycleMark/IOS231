@@ -25,8 +25,8 @@ namespace BananaFinder
 			//GetViewForAnnotation delegate property 
 			//Can't be used if a map delegate instance is assigned to the map view
 			map.GetViewForAnnotation = (mapView, annotation) => {
-				var pinView = new MKPinAnnotationView (annotation, "pin");
-				pinView.PinColor = MKPinAnnotationColor.Purple;
+				var pinView = new MKMarkerAnnotationView (annotation, "pin");
+				pinView.MarkerTintColor = UIColor.Purple;
 				return pinView;
 			}; 
 			*/

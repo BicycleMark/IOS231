@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BananaFinder", "BananaFinder.csproj", "{EA4673F9-33D1-4659-960A-8D595B51E844}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|iPhoneSimulator = Debug|iPhoneSimulator
+		Release|iPhone = Release|iPhone
+		Release|iPhoneSimulator = Release|iPhoneSimulator
+		Debug|iPhone = Debug|iPhone
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EA4673F9-33D1-4659-960A-8D595B51E844}.Debug|Any CPU.ActiveCfg = Debug|iPhoneSimulator
+		{EA4673F9-33D1-4659-960A-8D595B51E844}.Debug|Any CPU.Build.0 = Debug|iPhoneSimulator
+		{EA4673F9-33D1-4659-960A-8D595B51E844}.Debug|iPhone.ActiveCfg = Debug|iPhone
+		{EA4673F9-33D1-4659-960A-8D595B51E844}.Debug|iPhone.Build.0 = Debug|iPhone
+		{EA4673F9-33D1-4659-960A-8D595B51E844}.Debug|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator
+		{EA4673F9-33D1-4659-960A-8D595B51E844}.Debug|iPhoneSimulator.Build.0 = Debug|iPhoneSimulator
+		{EA4673F9-33D1-4659-960A-8D595B51E844}.Release|Any CPU.ActiveCfg = Release|iPhone
+		{EA4673F9-33D1-4659-960A-8D595B51E844}.Release|Any CPU.Build.0 = Release|iPhone
+		{EA4673F9-33D1-4659-960A-8D595B51E844}.Release|iPhone.ActiveCfg = Release|iPhone
+		{EA4673F9-33D1-4659-960A-8D595B51E844}.Release|iPhone.Build.0 = Release|iPhone
+		{EA4673F9-33D1-4659-960A-8D595B51E844}.Release|iPhoneSimulator.ActiveCfg = Release|iPhoneSimulator
+		{EA4673F9-33D1-4659-960A-8D595B51E844}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
+	EndGlobalSection
+EndGlobal

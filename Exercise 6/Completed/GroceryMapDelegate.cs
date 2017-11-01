@@ -2,6 +2,8 @@
 using MapKit;
 using UIKit;
 using System.Diagnostics;
+using CoreLocation;
+using Foundation;
 
 namespace BananaFinder
 {
@@ -9,9 +11,10 @@ namespace BananaFinder
 	{
 		public Action MapViewChanged { get; set; }
 
+		MKPolyline route;
+
 		public GroceryMapDelegate ()
 		{
-
 		}
 
 		public override MKAnnotationView GetViewForAnnotation (MKMapView mapView, IMKAnnotation annotation)
@@ -61,7 +64,57 @@ namespace BananaFinder
 			Debug.WriteLine ("RegionChanged");
 
 			if (MapViewChanged != null)
-				MapViewChanged (); //invoke the action
+				MapViewChanged ();
+		}
+
+		public override MKOverlayRenderer OverlayRenderer (MKMapView mapView, IMKOverlay overlay)
+		{
+			if (overlay is MKPolyline)
+            {
+               	var route = (MKPolyline)overlay;
+				var renderer = new MKPolylineRenderer(route) { StrokeColor = UIColor.Red, LineWidth = 3.0f };
+                return renderer;
+            }
+            return null;
+		}
+
+		public override void DidSelectAnnotationView (MKMapView mapView, MKAnnotationView view)
+		{
+            StoreAnnotation storeAnnotation = view.Annotation as StoreAnnotation;
+            if (storeAnnotation != null)
+            {
+                var coord = storeAnnotation.Coordinate;
+
+                var destination = new MKMapItem(new MKPlacemark(coord, (MKPlacemarkAddress)null));
+                ShowDirections(destination, mapView);
+            }
+		}
+
+		void ShowDirections (MKMapItem destination, MKMapView mapView)
+		{
+			var source = new MKMapItem (new MKPlacemark (ViewController.currentLocation, (MKPlacemarkAddress)null));
+
+			var request = new MKDirectionsRequest () {
+				Destination = destination,
+				Source = source,
+				RequestsAlternateRoutes = false,
+			};
+
+			var directions = new MKDirections (request);
+
+			directions.CalculateDirections ((MKDirectionsResponse response, NSError e) => {
+
+				if(this.route != null)
+					mapView.RemoveOverlay(this.route);
+
+				if(response == null || response.Routes.Length == 0)
+					return;
+
+				//save the overlay so we can remove it next time we draw
+				route = response.Routes[0].Polyline;
+
+				mapView.AddOverlay(route, MKOverlayLevel.AboveRoads);
+			});
 		}
 	}
 }

@@ -5,9 +5,6 @@ using MapKit;
 using CoreLocation;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Foundation;
-using System.Diagnostics;
-using System.Linq;
 
 namespace BananaFinder
 {
@@ -23,25 +20,23 @@ namespace BananaFinder
 		{
 			base.ViewDidLoad ();
 
-			var mapDelegate = new GroceryMapDelegate ();
-			mapDelegate.MapViewChanged += () => SearchAsync ();
-
 			map.Camera.CenterCoordinate = currentLocation;
 			map.Camera.Altitude = 10000;
+
+			var mapDelegate = new GroceryMapDelegate ();
+
+			mapDelegate.MapViewChanged = () => SearchAsync (); 
+
 			map.Delegate = mapDelegate;
 		}
 
 		public async Task SearchAsync ()
 		{
-			map.RemoveAnnotations (map.Annotations);//clear any existing results
-
 			var request = new MKLocalSearchRequest ();
 			request.NaturalLanguageQuery = "Grocery stores";
-			request.Region = map.Region;//we'll search on the current screen
+			request.Region = map.Region; //limit search to the current viewport
 
-			var local = new MKLocalSearch(request);
-
-			var response = await local.StartAsync ();
+			var response = await new MKLocalSearch(request).StartAsync ();
 
 			if (response != null && response.MapItems.Length > 0) 
 			{
@@ -50,8 +45,11 @@ namespace BananaFinder
 				foreach (var item in response.MapItems) {
 					stores.Add(new GroceryStore()
 						{
-							Name = item.Name, PhoneNumber = item.PhoneNumber, Address = item.Placemark.Title,
-							Longitude = item.Placemark.Location.Coordinate.Longitude, Latitude = item.Placemark.Location.Coordinate.Latitude
+							Name = item.Name, 
+							PhoneNumber = item.PhoneNumber, 
+							Address = item.Placemark.Title,
+							Longitude = item.Placemark.Location.Coordinate.Longitude, 
+							Latitude = item.Placemark.Location.Coordinate.Latitude
 						});
 				}
 				AddStoreAnnotations(stores);
@@ -61,8 +59,23 @@ namespace BananaFinder
 		void AddStoreAnnotations (List<GroceryStore> stores)
 		{
 			foreach (var store in stores) {
-				var annotation = new StoreAnnotation (store);
-				map.AddAnnotation (annotation);
+				var storeAnnotation = new StoreAnnotation (store);
+                //make sure we dont already have the annotation
+                bool alreadyContainsAnnotation = false;
+                foreach (var annotation in map.Annotations)
+                {
+                    StoreAnnotation mapAnnotationAsStore = annotation as StoreAnnotation;
+                    if (mapAnnotationAsStore != null)
+                    {
+                        if (mapAnnotationAsStore.Address == store.Address)
+                        {
+                            alreadyContainsAnnotation = true;
+                            break;
+                        }
+                    }
+                }
+                if(!alreadyContainsAnnotation)
+                    map.AddAnnotation (storeAnnotation);
 			}
 		}
 	}

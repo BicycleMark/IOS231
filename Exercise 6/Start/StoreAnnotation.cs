@@ -14,8 +14,12 @@ namespace BananaFinder
 		public override string Subtitle { get { return store.PhoneNumber; } }
 		public override CLLocationCoordinate2D Coordinate 
 		{
-			get {return new CLLocationCoordinate2D(store.Latitude, store.Longitude); }
+			get 
+			{ 
+				return new CLLocationCoordinate2D(store.Latitude, store.Longitude);
+			}
 		}
+
 
 		public StoreAnnotation (GroceryStore store)
 		{
