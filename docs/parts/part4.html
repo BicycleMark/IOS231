@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+    <title>Add behavior to the annotations</title>
+    <link rel="stylesheet" type="text/css" href="./res/styles/normalize.css">
+    <link rel="stylesheet" type="text/css" href="./res/styles/prettify.css" />
+    <link rel="stylesheet" type="text/css" href="./res/styles/styles.css">
+</head>
+
+<body>
+    <!-- Use the same title as the StartHere -->
+    <header>Customizing Maps and Location</header>
+
+    <section id="main">
+
+        <h1 id="page-title"></h1>
+
+        <h2>Duration</h2>
+        <p>15 minutes</p>
+
+        <div class="hintblock">
+            <strong>Tip:</strong> If you are doing this exercise live in a session, make sure to make good use of the instructor,
+            they are online to answer any questions you have!
+        </div>
+
+        <h2>Goals</h2>
+
+        <p>
+            The primary goal of this lab will be add behavior to the map annotations to display additional information when the annotations are tapped.
+            A screenshot of the finished application is shown below.
+        </p>
+
+        <div align="center"><img src="res/images/ex3_complete.png" width="240" alt="" style='border:1px solid #999999' /></div>
+
+        <!-- Include a screen shot of the completed project? -->
+
+        <!-- Include any differences about the OS or environment expectations
+             if there are changes from StartHere for this lab -->
+
+        <!-- Note any starter/complete or assets included in this lab. -->
+        <!-- Remove this section if there are none -->
+        <h2>Required assets</h2>
+        <p>
+            The provided <strong>Exercise 4</strong> folder contains a subfolder named <strong>Completed</strong> with a solution you can use to check your work. 
+            Please make sure you have this folder before you begin.
+        </p>
+
+        <!-- Give them a challenge here, high-level steps of what we want them to do
+             so they can use this instead of the step-by-step (baby steps) included below -->
+        <h2>Challenge</h2>
+        <p>
+            This exercise is a continuation of the previous exercise.
+             <ol>
+                <li>Show the callout: enable the callout to be displayed on the annotations and set the left accessory view to display the provided banana image.</li>
+                <li>Set the right accessory view to a detail disclosure button.</li>
+                <li>Display an Alert showing store hours when the callout is tapped.</li>
+            </ol>
+        </p>
+
+        <!-- Steps -->
+        <h1>Steps</h1>
+        <p>Below are the step-by-step instructions to implement the exercise.  
+            This is a continuation of the previous exercise.  You can use your existing project or open the completed solution in the <b>Part 03 Resources</b> folder.</p>
+ 
+        <h2>Add a callout to the annotations</h2>
+        <p>By default, map annotations will display a callout when tapped.  However, if <code>GetViewForAnnation</code> is overriden, the callout must be explicitly enabled.
+        <ol>
+            <li>Open <b>GroceryMapDelegate</b> and find the <code>GetViewForAnnotation</code> method.</li>
+            <li>After the <code>MKPinAnnotation</code> has been instantiated, set its <code>CanShowCallout</code> property to <code>true</code>.</li>
+            <li>In the <b>Assets</b> folder under <b>Part 04 Resources</b> you'll find three more banana images, add them to the <b>Resources</b> folder of your project.</li>
+            <li>Display the banana image in the callout: Set <b>pinView</b>'s <code>LeftCalloutAccessoryView</code> to a <code>UIImageView</code> containing the new banana png.</li>
+            
+            <li>Run the application and tap on the annotations and the callout.</li>
+        </ol>
+<p><a href="#" onclick="toggleCode(this,'LeftCalloutAccessoryView');return false;" class="uiitem">Show Code</a>
+<div class="indent-medium" id="LeftCalloutAccessoryView" style="display:none;">
+<pre class="prettyprint">
+public override MKAnnotationView GetViewForAnnotation (MKMapView mapView, IMKAnnotation annotation)
+{
+    if (pinView == null) {
+        ...
+        pinView.CanShowCallout = true;
+        pinView.LeftCalloutAccessoryView = new UIImageView (UIImage.FromBundle ("banana.png"));
+    }
+    ...
+}
+</pre></div></p>
+        <div align="center"><img src="res/images/ex3_callout.png" width="240" alt="" style='border:1px solid #999999' /></div>
+
+        <h2>Add a detail disclosure button to the callout</h2>
+        <ol>
+            <li>Display a detail disclosure button in the callout: Set <b>pinView</b>'s <code>RightCalloutAccessoryView</code> to a <code>UIButton</code> of type <code>DetailDisclosure</code>.</li>
+            <li>Run the application and click on the callout, it should now visibly respond to taps.</li>
+         </ol>
+<p><a href="#" onclick="toggleCode(this,'RightCalloutAccessoryView');return false;" class="uiitem">Show Code</a>
+<div class="indent-medium" id="RightCalloutAccessoryView" style="display:none;">
+<pre class="prettyprint">
+if (pinView == null) {
+    ...
+    pinView.RightCalloutAccessoryView = UIButton.FromType (UIButtonType.DetailDisclosure);
+}
+</pre></div></p>
+
+        <h2>Respond to accessory taps</h2>
+        <p>We'll display an alert when the callout is tapped showing the hours of opereration.</p>
+        <ol>
+            <li>In <b>GroceryMapDelegate</b>, override <code>CalloutAccessoryControlTapped</code>.</li>
+            <li>We can reach the annotation data from the passed in MKAnnotationView but it's exposed as a property of type <code>IMKAnnotationView</code>.</li>
+            <li>Cast <code>view.Annotation</code> to <code>StoreAnnotation</code> and store it in a local variable named <b>annotation</b>.</li>
+            <li>Use the <code>TimeOpen</code> and <code>TimeClosed</code> properties on <b>annotation</b> to populate an AlertView that shows the store hours.</li>
+            <li>Run the application and tap on the callout and the detail disclosure button, notice that both will display the alert.</li>
+        </ol>
+<p><a href="#" onclick="toggleCode(this,'CalloutAccessoryControlTapped');return false;" class="uiitem">Show Code</a>
+<div class="indent-medium" id="CalloutAccessoryControlTapped" style="display:none;">
+<pre class="prettyprint">
+public override void CalloutAccessoryControlTapped (MKMapView mapView, MKAnnotationView view, UIControl control)
+{
+    var annotation = view.Annotation as StoreAnnotation;
+
+    if (annotation == null)
+        return;
+
+    var msg = String.Format ("Hours:\r\n{0} till {1}", annotation.TimeOpen, annotation.TimeClosed);
+
+    new UIAlertView (annotation.Title, msg, null, "OK", null).Show();
+}
+</pre></div></p>
+
+        <h1>Summary</h1>
+        <p>
+            In this exercise you displayed a callout for your map annotations, added accessory views to the callout and responded to user taps.
+        </p>
+        <div class="align-right">
+            <a href="../Start%20Here.html">Go Back</a>
+        </div>
+    </section>
+
+    <script src="./res/js/jquery.min.js"></script>
+    <script src="./res/js/prettify.js"></script>
+    <script src="./res/js/script.js"></script>
+
+    <footer>Copyright (C) 2018 Xamarin Inc., Microsoft.</footer>
+</body>
+</html>
