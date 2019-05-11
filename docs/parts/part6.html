@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+    <title>Add overlays and display directions</title>
+    <link rel="stylesheet" type="text/css" href="./res/styles/normalize.css">
+    <link rel="stylesheet" type="text/css" href="./res/styles/prettify.css" />
+    <link rel="stylesheet" type="text/css" href="./res/styles/styles.css">
+</head>
+
+<body>
+    <!-- Use the same title as the StartHere -->
+    <header>Customizing Maps and Location</header>
+
+    <section id="main">
+
+        <h1 id="page-title"></h1>
+
+        <h2>Duration</h2>
+        <p>10 minutes</p>
+
+        <div class="hintblock">
+            <strong>Tip:</strong> If you are doing this exercise live in a session, make sure to make good use of the instructor,
+            they are online to answer any questions you have!
+        </div>
+
+        <h2>Goals</h2>
+
+        <p>
+            The primary goal of this lab will be to display overlays to mark a region and show directions.
+            A screenshot of the finished application is shown below.
+        </p>
+
+        <div align="center"><img src="res/images/ex5_complete.png" width="240" alt="" style='border:1px solid #999999' /></div>
+
+        <h2>Required assets</h2>
+        <p>
+            The provided <strong>Exercise 6</strong> folder contains a subfolder named <strong>Start</strong> with a solution you will use as starting point and a <strong>Completed</strong> can use to check your work. Please make sure you have these folders before you begin.
+        </p>
+
+        <!-- Give them a challenge here, high-level steps of what we want them to do
+             so they can use this instead of the step-by-step (baby steps) included below -->
+        <h2>Challenge</h2>
+        <p>
+            This exercise is a continuation of the previous exercise.
+            <ol>
+                <li>Inspect the <b>ShowDirections</b> method and use it calculate directions between the current location and a passed in <code>MKMapItem</code>.</li>
+                <li>Use the directions response to add a polyline overlay to the map.</li>
+                <li>Add a renderer for the polyline.</li>
+                <li>Display directions when the user taps on an annotation.</li>
+            </ol>
+        </p>
+
+        <!-- Steps -->
+        <h1>Steps</h1>
+        <p>Below are the step-by-step instructions to implement the exercise.</p>
+
+        <h2>Inspect the ShowDirections method</h2>
+        <ol>
+            <li>Open <b>GroceryMapDelegate.cs</b> and scroll to the <code>ShowDirections</code> method.</li>
+            <li>Inspect the the code to create the search request and then execute the search.
+                You'll use this code to caluclate a route from the current location to a search result.</li>
+        </ol>
+
+        <h2>Add the directions overlay</h2>
+        <ol>
+            <li>We're going to persist the route as a field, add a class level <code>MKPolyline</code> named <b>route</b> in your map delegate class.</li>
+            <li>Inside the lambda passed into <code>CalculateDirections</code>, check to see if <b>route</b> field is non-null, and if so, remove the overlay by calling the <code>RemoveOverlay</code> method on the passed in <b>mapView</b>.</li>
+            <li>Next make sure we valid directions, check if the <b>response</b> is <code>null</code> or if its <code>Routes</code> property is empty, and return.</li>
+            <li>If we have a valid route, save it to our field <b>route</b>.  Note: the directions come back as an array of <code>MKRoute</code>s stored on the <code>Routes</code> property of <b>response</b>.  Save the first result's <code>Polyline</code> property to the <b>route</b> field.</li>
+            <li>And finally, add the overlay: Using the passed in <b>mapView</b>, call the <code>AddOverlay</code> method passing in <b>route</b>, with the <b>level</b> set as <code>MKOverlayLevel.AboveRoads</code>.</li>
+        </ol>
+<p><a href="#" onclick="toggleCode(this,'MKDirectionsResponse');return false;" class="uiitem">Show Code</a>
+<div class="indent-medium" id="MKDirectionsResponse" style="display:none;">
+<pre class="prettyprint">
+directions.CalculateDirections ((MKDirectionsResponse response, NSError e) => {
+
+    if(this.route != null)
+        mapView.RemoveOverlay(this.route);
+
+    if(response == null || response.Routes.Length == 0)
+        return;
+
+    route = response.Routes[0].Polyline;
+
+    mapView.AddOverlay(route, MKOverlayLevel.AboveRoads);
+});
+</pre></div></p>
+
+        <h2>Render the directions overlay</h2>
+        <ol>
+            <li>Open <b>GroceryMapDelegate.cs</b> and scroll to the <code>OverlayRenderer</code> method.</li>
+            <li>Check if <b>overlay</b> is of type <code>MKPolyline</code>.</li>
+            <li>If it is, cast <b>overlay</b> to a <code>MKPolyline</code> and save it to a local variable named <b>route</b>.</li>
+            <li>Instantiate a <code>MKPolylineRenderer</code> passing in <b>route</b>.</li>
+            <li>Set the <b>StrokeColor</b> to <code>UIColor.Red</code> and the <b>LineWidth</b> to <code>3.0f</code>.</li>
+            <li>Return the newly created renderer.</li>
+        </ol>
+<p><a href="#" onclick="toggleCode(this,'MKPolylineRenderer');return false;" class="uiitem">Show Code</a>
+<div class="indent-medium" id="MKPolylineRenderer" style="display:none;">
+<pre class="prettyprint">
+public override MKOverlayRenderer OverlayRenderer (MKMapView mapView, IMKOverlay overlay)
+{
+    if (overlay.GetType() == typeof(MKPolyline))
+    {
+        var route = (MKPolyline)overlay;
+        var renderer = new MKPolylineRenderer(route) { StrokeColor = UIColor.Red, LineWidth = 3.0f };
+        return renderer;
+    }
+    return null;
+}
+</pre></div></p>
+
+        <h2>Show directions</h2>
+        <p>We'll display the route to a point of interest when the annotation is tapped.
+        <ol>
+            <li>Go to <b>GroceryMapDelegate.cs</b> and override the <code>DidSelectAnnotationView</code> method.</li>
+            <li>Instantate a <code>MKPlacemark</code>
+                <ul>
+                    <li>You can get the coordinate for the current annotation from the passsed in <b>view</b>.  Use its <code>Annotation</code> property. You will
+                    need to cast the annotation to a <code>StoreAnnotation</code>. Make sure you run the code in <code>DidSelectAnnotationView</code> only if the annotation is a <code>StoreAnnotation</code>.</li>
+                    <li>For second parameter, cast <code>null</code> to <code>MKPlacemarkAddress</code>.</li>
+                </ul>
+            <li>Use the <code>MKPlacemark</code> above to instantiate a <code>MKMapItem</code> and save it to local variable named <b>destination</b>.</li>
+            <li>Call the <code>ShowDirections</code> method passing in <b>destination</b> and <b>mapView</b>.</li>
+            <li>Run the application.</li>
+        </ol>
+<p><a href="#" onclick="toggleCode(this,'DidSelectAnnotationView');return false;" class="uiitem">Show Code</a>
+<div class="indent-medium" id="DidSelectAnnotationView" style="display:none;">
+<pre class="prettyprint">
+public override void DidSelectAnnotationView (MKMapView mapView, MKAnnotationView view)
+{
+    StoreAnnotation storeAnnotation = view.Annotation as StoreAnnotation;
+    if (storeAnnotation != null)
+    {
+        var coord = storeAnnotation.Coordinate;
+
+        var destination = new MKMapItem(new MKPlacemark(coord, (MKPlacemarkAddress)null));
+        ShowDirections(destination, mapView);
+    }
+}
+</pre></div></p>
+
+        <h2>Bonus - add an annotation for the user location</h2>
+        <p>There's an <b>Assets</b> folder in the <b>Part 06 Resources</b> folder that contains a monkey image.
+            Try adding an annotation to represent the current location using the monkey image.
+            The <b>Bonus</b> solution shows one possible approach.
+        </p>
+
+        <div align="center"><img src="res/images/ex5_bonus.png" width="240" alt="" style='border:1px solid #999999' /></div>
+
+        <h1>Summary</h1>
+        <p>
+            In this exercise you added 2 types of overlays: Circles and Polylines.  You also searched for directions between 2 locations.
+        </p>
+        <div class="align-right">
+            <a href="../Start%20Here.html">Go Back</a>
+        </div>
+    </section>
+
+    <script src="./res/js/jquery.min.js"></script>
+    <script src="./res/js/prettify.js"></script>
+    <script src="./res/js/script.js"></script>
+
+    <footer>Copyright (C) 2018 Xamarin Inc., Microsoft.</footer>
+</body>
+</html>
